@@ -37,6 +37,14 @@ class Webgrind_Config extends Webgrind_MasterConfig {
     static $defaultHideInternalFunctions = false;
 
     /**
+     * Checks if XDebug is on version 3.0 or greater, affects the output dir
+     * and how cachegrind files are parsed
+     */
+    static function xdebugNewFeatures() {
+        return version_compare('3.0', phpversion('xdebug'), '>=') ? true : false;
+    }
+
+    /**
      * Path to python executable
      */
     static $pythonExecutable = '/usr/bin/python3';
@@ -135,7 +143,10 @@ class Webgrind_Config extends Webgrind_MasterConfig {
      * Directory to search for trace files
      */
     static function xdebugOutputDir() {
-        $dir = ini_get('xdebug.profiler_output_dir');
+        if(self::xdebugNewFeatures())
+            $dir = ini_get('xdebug.output_dir');
+        else
+            $dir = ini_get('xdebug.profiler_output_dir');
         if ($dir=='') // Ini value not defined
             return realpath(Webgrind_Config::$profilerDir).'/';
         return realpath($dir).'/';
